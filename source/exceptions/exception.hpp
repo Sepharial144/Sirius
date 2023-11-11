@@ -1,10 +1,10 @@
-#ifndef _NET_SOCKET_EXCEPTION_HPP_
-#define _NET_SOCKET_EXCEPTION_HPP_
+#ifndef _SIRIUS_EXCEPTION_HPP_
+#define _SIRIUS_EXCEPTION_HPP_
 
 #include <exception>
 #include <string>
 
-namespace net
+namespace sirius
 {
     /*
     * Exception wrapper
@@ -29,6 +29,6 @@ namespace net
         int32_t m_errorCode;
     };
 
-} // !namespace net
+} // !namespace sirius
 
-#endif // !_NET_SOCKET_EXCEPTION_HPP_
+#endif // !_SIRIUS_EXCEPTION_HPP_

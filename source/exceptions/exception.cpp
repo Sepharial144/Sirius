@@ -1,16 +1,8 @@
-#include "net_exception.hpp"
+#include "exception.hpp"
 
 #include <sstream>
 
-#if defined(_WIN32) && !defined(linux)
-#define NET_ERROR_CODE ::WSAGetLastError()
-#define NET_OS_MESSAGE " wsa code: "
-#elif defined(linux) && !defined(_WIN32)
-#define NET_ERROR_CODE errno
-#define NET_OS_MESSAGE " code: "
-#endif
-
-namespace net
+namespace sirius
 {
     void throw_exception_on(const bool is_error, const char* error)
     {
@@ -19,18 +11,18 @@ namespace net
     }
 
     exception::exception(const char* error)
-        : m_errorCode{ NET_ERROR_CODE }
+        : m_errorCode{ errno }
     {
         std::stringstream ss;
-        ss << error << NET_OS_MESSAGE << std::to_string(m_errorCode);
+        ss << error << " code: " << std::to_string(m_errorCode);
         m_error = ss.str();
     }
 
     exception::exception(const char* error, int32_t status_code)
-        : m_errorCode{ NET_ERROR_CODE }
+        : m_errorCode{ errno }
     {
         std::stringstream ss;
-        ss << error << NET_OS_MESSAGE << m_errorCode << " return code " << status_code;
+        ss << error << " code: " << m_errorCode << " return code " << status_code;
         m_error = ss.str();
     }
 
@@ -46,4 +38,4 @@ namespace net
     {
         return m_errorCode;
     }
-} // !namespace net
+} // !namespace sirius
