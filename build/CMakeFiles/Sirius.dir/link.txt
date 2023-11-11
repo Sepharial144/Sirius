@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/Sirius.dir/source/exceptions/net_exception.cpp.o CMakeFiles/Sirius.dir/source/main.cpp.o -o Sirius 
