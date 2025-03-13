@@ -3,6 +3,8 @@
 #include <sstream>
 #include <exception>
 
+#include "Windows.h"
+
 namespace ui
 {
     void throw_exception_on(const bool is_error, const char* error)
@@ -19,6 +21,7 @@ namespace ui
         m_error = ss.str();
     }
 
+    exception::exception(std::string& error) :m_error{ error } {}
 
     exception::exception(const char* error, int32_t status_code)
     {
@@ -37,3 +40,20 @@ namespace ui
         return m_error.c_str();
     }
 } // !namespace net
+
+namespace Win32
+{
+    inline std::string HrToString(HRESULT hr)
+    {
+        char s_str[64] = {};
+        sprintf_s(s_str, " HRESULT of 0x%08X", static_cast<UINT>(hr));
+        return std::string(s_str);
+    }
+
+    void throw_exception(const char* error, HRESULT status_code)
+    {
+        std::string errorString{ error };
+        errorString.append(HrToString(status_code));
+        throw ui::exception(errorString);
+    }
+} // !namespace Win32

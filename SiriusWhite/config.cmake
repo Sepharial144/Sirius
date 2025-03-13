@@ -30,6 +30,7 @@ set(LOG_LEVEL ${LOGGING_DEBUG_VALUE})
 
 # TODO: create script which provide DEBUG variable
 add_compile_definitions(DEBUG=true)
+add_compile_definitions(_DEBUG=true) # for DirectX debug mode
 
 add_compile_definitions(LOGGING=${LOGGING})
 add_compile_definitions(LOGGING_LEVEL=${LOG_LEVEL})

@@ -1,8 +1,6 @@
-#ifndef _UI_EXCEPTION_HPP_
-#define _UI_EXCEPTION_HPP_
-
 #include <exception>
 #include <string>
+#include "Windows.h"
 
 namespace ui
 {
@@ -23,6 +21,7 @@ namespace ui
     {
     public:
         explicit exception(const char* error);
+        explicit exception(std::string& error);
         explicit exception(const char* error, int32_t status_code);
         virtual ~exception() noexcept;
         virtual const char* what() const noexcept;
@@ -33,4 +32,7 @@ namespace ui
 
 } // !namespace ui
 
-#endif // !_UI_EXCEPTION_HPP_
+namespace Win32
+{
+    void throw_exception(const char* error, HRESULT status_code);
+} // !namespace Win32
