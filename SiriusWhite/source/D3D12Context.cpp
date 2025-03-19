@@ -47,7 +47,7 @@ _Templ_spec_ D3D12Context::Get<ID3D12Fence>() -> ID3D12Fence* { return m_fence.G
 auto D3D12Context::GetSrvHeap() -> ID3D12DescriptorHeap* { return m_pd3dSrvDescHeap.Get(); }
 auto D3D12Context::GetSrvHeapAlloc() -> ExampleDescriptorHeapAllocator* { return m_pd3dSrvDescHeapAlloc.get(); }
 bool D3D12Context::isSwapChainOccluded() const { return m_SwapChainOccluded; }
-void D3D12Context::setSwapChainOccluded(bool value) { m_SwapChainOccluded = value; }
+void D3D12Context::setSwapChainOccluded(bool value) { m_SwapChainOccluded = value; } //TODO: need to delete this function because it dont use anymore
 
 
 // TODO: Maybe threre is no reason to use raw pointers here, 
@@ -262,7 +262,7 @@ void D3D12Context::Rendering(const ImVec4& clear_color)
     // Present
     HRESULT hr = m_pSwapChain->Present(1, 0);   // Present with vsync
     //HRESULT hr = g_pSwapChain->Present(0, 0); // Present without vsync
-    setSwapChainOccluded(hr == DXGI_STATUS_OCCLUDED);
+    m_SwapChainOccluded = (hr == DXGI_STATUS_OCCLUDED);
 
     UINT64 fenceValue = m_fenceLastSignaledValue + 1ul;
     m_pd3dCommandQueue->Signal(m_fence.Get(), fenceValue);

@@ -2365,6 +2365,121 @@ void SetNextAxesToFit() {
         SetNextAxisToFit(i);
 }
 
+/*----------------------------------------------------------------------------------------------------
+Title: BeginCandlestickChartPlot
+
+Description:
+    Self implementations of Candle stick chart, so it customized and take some changes
+
+Arguments:
+    'title_id'         - name of chart
+    'const ImVec2& size' - size of window
+    ImPlotFlags flags - flags, should be know clear for better understanding
+
+Return:
+    'DWORD' - process id
+    'exception' - return exceptions when it has a problem
+*/
+
+bool BeginCandlestickChartPlot(const char* title_id, const ImVec2& size, ImPlotFlags flags) {
+    IM_ASSERT_USER_ERROR(GImPlot != nullptr, "No current context. Did you call ImPlot::CreateContext() or ImPlot::SetCurrentContext()?");
+    ImPlotContext& gp = *GImPlot;
+    IM_ASSERT_USER_ERROR(gp.CurrentPlot == nullptr, "Mismatched BeginPlot()/EndPlot()!");
+
+    // FRONT MATTER -----------------------------------------------------------
+
+    if (gp.CurrentSubplot != nullptr)
+        ImGui::PushID(gp.CurrentSubplot->CurrentIdx);
+
+    // get globals
+    ImGuiContext& G = *GImGui;
+    ImGuiWindow* Window = G.CurrentWindow;
+
+    // skip if needed
+    if (Window->SkipItems && !gp.CurrentSubplot) {
+        ResetCtxForNextPlot(GImPlot);
+        return false;
+    }
+
+    // ID and age (TODO: keep track of plot age in frames)
+    const ImGuiID ID = Window->GetID(title_id);
+    const bool just_created = gp.Plots.GetByKey(ID) == nullptr;
+    gp.CurrentPlot = gp.Plots.GetOrAddByKey(ID);
+
+    ImPlotPlot& plot = *gp.CurrentPlot;
+    plot.ID = ID;
+    plot.Items.ID = ID - 1;
+    plot.JustCreated = just_created;
+    plot.SetupLocked = false;
+
+    // check flags
+    if (plot.JustCreated)
+        plot.Flags = flags;
+    else if (flags != plot.PreviousFlags)
+        plot.Flags = flags;
+    plot.PreviousFlags = flags;
+
+    // setup default axes
+    if (plot.JustCreated) {
+        SetupAxis(ImAxis_X1);
+        SetupAxis(ImAxis_Y1);
+    }
+
+    // reset axes
+    for (int i = 0; i < ImAxis_COUNT; ++i) {
+        plot.Axes[i].Reset();
+        UpdateAxisColors(plot.Axes[i]);
+    }
+    // ensure first axes enabled
+    plot.Axes[ImAxis_X1].Enabled = true;
+    plot.Axes[ImAxis_Y1].Enabled = true;
+    // set initial axes
+    plot.CurrentX = ImAxis_X1;
+    plot.CurrentY = ImAxis_Y1;
+
+    // process next plot data (legacy)
+    for (int i = 0; i < ImAxis_COUNT; ++i)
+        ApplyNextPlotData(i);
+
+    // clear text buffers
+    // TODO: should clean TextBuffer from this class
+    plot.ClearTextBuffer();
+    plot.SetTitle(title_id); // it removed for better visualisation
+
+    // set frame size
+    ImVec2 frame_size;
+    if (gp.CurrentSubplot != nullptr)
+        frame_size = gp.CurrentSubplot->CellSize;
+    else
+        frame_size = ImGui::CalcItemSize(size, gp.Style.PlotDefaultSize.x, gp.Style.PlotDefaultSize.y);
+
+    if (frame_size.x < gp.Style.PlotMinSize.x && (size.x < 0.0f || gp.CurrentSubplot != nullptr))
+        frame_size.x = gp.Style.PlotMinSize.x;
+    if (frame_size.y < gp.Style.PlotMinSize.y && (size.y < 0.0f || gp.CurrentSubplot != nullptr))
+        frame_size.y = gp.Style.PlotMinSize.y;
+
+    plot.FrameRect = ImRect(Window->DC.CursorPos, Window->DC.CursorPos + frame_size);
+
+    // align left and top
+    plot.FrameRect.Min.x -= 7.0f;
+    plot.FrameRect.Min.y -= 8.0f;
+    plot.FrameRect.Max.x += 7.6f;
+    plot.FrameRect.Max.y += 200.0f; // TODO: find posibility to create full windowed size of frame
+    ImGui::ItemSize(plot.FrameRect);
+
+    if (!ImGui::ItemAdd(plot.FrameRect, plot.ID, &plot.FrameRect) && !gp.CurrentSubplot) {
+        ResetCtxForNextPlot(GImPlot);
+        return false;
+    }
+
+    // setup items (or dont)
+    if (gp.CurrentItems == nullptr)
+        gp.CurrentItems = &plot.Items;
+
+    return true;
+}
+
+
 //-----------------------------------------------------------------------------
 // BeginPlot
 //-----------------------------------------------------------------------------
@@ -2651,7 +2766,7 @@ void SetupFinish() {
         ImGui::RenderFrame(plot.FrameRect.Min, plot.FrameRect.Max, GetStyleColorU32(ImPlotCol_FrameBg), true, Style.FrameRounding);
 
     // grid bg
-    DrawList.AddRectFilled(plot.PlotRect.Min, plot.PlotRect.Max, GetStyleColorU32(ImPlotCol_PlotBg));
+    DrawList.AddRectFilled(plot.PlotRect.Min, plot.PlotRect.Max, GetStyleColorU32(ImPlotCol_PlotBg)); // 
 
     // transform ticks
     for (int i = 0; i < ImAxis_COUNT; i++) {
@@ -2774,15 +2889,17 @@ void EndPlot() {
     ImPlotPlot &plot      = *gp.CurrentPlot;
     ImGuiWindow * Window  = G.CurrentWindow;
     ImDrawList & DrawList = *Window->DrawList;
+
     const ImGuiIO &   IO  = ImGui::GetIO();
 
     // FINAL RENDER -----------------------------------------------------------
 
-    const bool render_border  = gp.Style.PlotBorderSize > 0 && GetStyleColorVec4(ImPlotCol_PlotBorder).w > 0;
+    const bool render_border  = gp.Style.PlotBorderSize > 0 && GetStyleColorVec4(ImPlotCol_PlotBorder).w > 0; // return gray color
     const bool any_x_held = plot.Held    || AnyAxesHeld(&plot.Axes[ImAxis_X1], IMPLOT_NUM_X_AXES);
     const bool any_y_held = plot.Held    || AnyAxesHeld(&plot.Axes[ImAxis_Y1], IMPLOT_NUM_Y_AXES);
 
     ImGui::PushClipRect(plot.FrameRect.Min, plot.FrameRect.Max, true);
+
 
     // render grid (foreground)
     for (int i = 0; i < IMPLOT_NUM_X_AXES; i++) {
@@ -2790,6 +2907,8 @@ void EndPlot() {
         if (x_axis.Enabled && x_axis.HasGridLines() && x_axis.IsForeground())
             RenderGridLinesX(DrawList, x_axis.Ticker, plot.PlotRect, x_axis.ColorMaj, x_axis.ColorMin, gp.Style.MajorGridSize.x, gp.Style.MinorGridSize.x);
     }
+
+
     for (int i = 0; i < IMPLOT_NUM_Y_AXES; i++) {
         ImPlotAxis& y_axis = plot.YAxis(i);
         if (y_axis.Enabled && y_axis.HasGridLines() && y_axis.IsForeground())
@@ -2858,6 +2977,7 @@ void EndPlot() {
     }
     ImGui::PopClipRect();
 
+
     // render annotations
     PushPlotClipRect();
     for (int i = 0; i < gp.Annotations.Size; ++i) {
@@ -2921,6 +3041,7 @@ void EndPlot() {
         DrawList.AddLine(v3, v4, col);
     }
 
+
     // render mouse pos
     if (!ImHasFlag(plot.Flags, ImPlotFlags_NoMouseText) && (plot.Hovered || ImHasFlag(plot.MouseTextFlags, ImPlotMouseTextFlags_ShowAlways))) {
 
@@ -2972,6 +3093,7 @@ void EndPlot() {
         }
     }
     PopPlotClipRect();
+
 
     // axis side switch
     if (!plot.Held) {
@@ -3027,6 +3149,7 @@ void EndPlot() {
             }
         }
     }
+
 
     // reset legend hovers
     plot.Items.Legend.Hovered = false;
@@ -3109,9 +3232,11 @@ void EndPlot() {
         plot.Items.Legend.Rect = ImRect();
     }
 
+
     // render border
     if (render_border)
         DrawList.AddRect(plot.PlotRect.Min, plot.PlotRect.Max, GetStyleColorU32(ImPlotCol_PlotBorder), 0, ImDrawFlags_RoundCornersAll, gp.Style.PlotBorderSize);
+
 
     // render tags
     for (int i = 0; i < gp.Tags.Size; ++i) {
@@ -3148,6 +3273,7 @@ void EndPlot() {
         DrawList.AddRectFilled(pos,pos+size,tag.ColorBg);
         DrawList.AddText(pos+gp.Style.AnnotationPadding,tag.ColorFg,txt);
     }
+
 
     // FIT DATA --------------------------------------------------------------
     const bool axis_equal = ImHasFlag(plot.Flags, ImPlotFlags_Equal);

@@ -635,6 +635,13 @@ IMPLOT_API void SetImGuiContext(ImGuiContext* ctx);
 //   size of plots (i.e. when ImVec2(0,0)) can be modified in your ImPlotStyle.
 IMPLOT_API bool BeginPlot(const char* title_id, const ImVec2& size=ImVec2(-1,0), ImPlotFlags flags=0);
 
+
+/*-----------------------------------------------------------------------------
+    *** Self implemented candlestick customizing plot ***
+*/
+IMPLOT_API bool BeginCandlestickChartPlot(const char* title_id, const ImVec2& size = ImVec2(-1, 0), ImPlotFlags flags = 0);
+
+
 // Only call EndPlot() if BeginPlot() returns true! Typically called at the end
 // of an if statement conditioned on BeginPlot(). See example above.
 IMPLOT_API void EndPlot();
