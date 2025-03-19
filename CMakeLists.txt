@@ -12,3 +12,4 @@ endif()
 # Включите подпроекты.
 add_subdirectory ("SiriusWhite")
 #add_subdirectory ("SiriusBlack")
+#add_subdirectory ("D3DExample")
