@@ -1,0 +1,38 @@
+﻿#include "D3D12FrameContext.hpp"
+#include "exception/exception.hpp"
+
+D3D12FrameContext::D3D12FrameContext()
+{
+
+    HRESULT ret;
+    // 👋 Declare DirectX 12 Handles
+    ComPtr<ID3D12Debug1> debugController;
+
+    // 🏭 Create Factory
+    UINT dxgiFactoryFlags = 0;
+
+#if defined(_DEBUG)
+    // 🐛 Create a Debug Controller to track errors
+    {
+        ComPtr<ID3D12Debug> d312Debug;
+        if (ret = ::D3D12GetDebugInterface(IID_PPV_ARGS(d312Debug.GetAddressOf())) != S_OK)
+            Win32::throw_exception("D3D12FrameContext: D3D12GetDebugInterface error", ret);
+
+        if (SUCCEEDED(d312Debug->QueryInterface(IID_PPV_ARGS(debugController.GetAddressOf())))
+        {
+            debugController->EnableDebugLayer();
+            debugController->SetEnableGPUBasedValidation(true);
+            dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+        }
+        else { Win32::throw_exception("D3D12FrameContext: QueryInterface error"); }
+
+    }
+#endif
+
+    if(ret = ::CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(m_factory.GetAddressOf())) != S_OK)
+        Win32::throw_exception("D3D12FrameContext: CreateDXGIFactory2 error", ret);
+}
+
+D3D12FrameContext::~D3D12FrameContext()
+{
+}

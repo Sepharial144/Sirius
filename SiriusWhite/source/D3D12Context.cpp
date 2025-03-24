@@ -38,11 +38,11 @@ void D3D12Context::CleanupRenderTarget()
         if (m_mainRenderTargetResource[i]) { m_mainRenderTargetResource[i]->Release(); m_mainRenderTargetResource[i] = nullptr; }
 }
 
-_Templ_spec_ D3D12Context::Get<ID3D12Device>()       -> ID3D12Device* { return m_pd3dDevice.Get(); }
-_Templ_spec_ D3D12Context::Get<ID3D12CommandQueue>() -> ID3D12CommandQueue* { return m_pd3dCommandQueue.Get(); }
-_Templ_spec_ D3D12Context::Get<ID3D12GraphicsCommandList>() -> ID3D12GraphicsCommandList* { return m_pd3dCommandList.Get(); }
-_Templ_spec_ D3D12Context::Get<IDXGISwapChain3>() -> IDXGISwapChain3* { return m_pSwapChain.Get(); }
-_Templ_spec_ D3D12Context::Get<ID3D12Fence>() -> ID3D12Fence* { return m_fence.Get(); }
+auto D3D12Context::GetID3D12Device()       -> ID3D12Device* { return m_pd3dDevice.Get(); }
+auto D3D12Context::GetID3D12CommandQueue() -> ID3D12CommandQueue* { return m_pd3dCommandQueue.Get(); }
+auto D3D12Context::GetID3D12GraphicsCommandList() -> ID3D12GraphicsCommandList* { return m_pd3dCommandList.Get(); }
+auto D3D12Context::GetIDXGISwapChain3() -> IDXGISwapChain3* { return m_pSwapChain.Get(); }
+auto D3D12Context::GetID3D12Fence() -> ID3D12Fence* { return m_fence.Get(); }
 
 auto D3D12Context::GetSrvHeap() -> ID3D12DescriptorHeap* { return m_pd3dSrvDescHeap.Get(); }
 auto D3D12Context::GetSrvHeapAlloc() -> ExampleDescriptorHeapAllocator* { return m_pd3dSrvDescHeapAlloc.get(); }

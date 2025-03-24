@@ -42,26 +42,7 @@ struct FrameContext
 static FrameContext                 g_frameContext[APP_NUM_FRAMES_IN_FLIGHT] = {};
 static UINT                         g_frameIndex = 0;
 
-/*
-static ID3D12Device* g_pd3dDevice = nullptr;
-static ID3D12DescriptorHeap* g_pd3dRtvDescHeap = nullptr;
-static ID3D12DescriptorHeap* g_pd3dSrvDescHeap = nullptr;
-static ExampleDescriptorHeapAllocator g_pd3dSrvDescHeapAlloc;
-static ID3D12CommandQueue* g_pd3dCommandQueue = nullptr;
-static ID3D12GraphicsCommandList* g_pd3dCommandList = nullptr;
-static ID3D12Fence* g_fence = nullptr;
-static HANDLE                       g_fenceEvent = nullptr;
-static UINT64                       g_fenceLastSignaledValue = 0;
-static IDXGISwapChain3* g_pSwapChain = nullptr;
-static bool                         g_SwapChainOccluded = false;
-static HANDLE                       g_hSwapChainWaitableObject = nullptr;
-static ID3D12Resource* g_mainRenderTargetResource[APP_NUM_BACK_BUFFERS] = {};
-static D3D12_CPU_DESCRIPTOR_HANDLE  g_mainRenderTargetDescriptor[APP_NUM_BACK_BUFFERS] = {};
-*/
-
 using namespace Microsoft::WRL;
-
-#define _Templ_spec_ template<> auto
 
 class D3D12Context
 {
@@ -75,8 +56,11 @@ public:
     void CleanupRenderTarget();
     void WaitForLastSubmittedFrame();
 
-    template<class D3D12ClassType>
-    auto Get() -> D3D12ClassType*;
+    auto GetID3D12Device() -> ID3D12Device*;
+    auto GetID3D12CommandQueue() -> ID3D12CommandQueue*;
+    auto GetID3D12GraphicsCommandList() -> ID3D12GraphicsCommandList*;
+    auto GetIDXGISwapChain3() -> IDXGISwapChain3*;
+    auto GetID3D12Fence() -> ID3D12Fence*;
 
     auto GetSrvHeap() -> ID3D12DescriptorHeap*;
     auto GetSrvHeapAlloc() -> ExampleDescriptorHeapAllocator*;

@@ -1,0 +1,41 @@
+#pragma once
+
+#include "imgui.h"
+
+#include <d3d12.h>
+#include <dxgi1_4.h>
+#include <tchar.h>
+
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+
+#ifdef _DEBUG
+#define DX12_ENABLE_DEBUG_LAYER
+#endif
+
+#ifdef DX12_ENABLE_DEBUG_LAYER
+#include <dxgidebug.h>
+#pragma comment(lib, "dxguid.lib")
+#endif
+
+#include <wrl.h>
+#include "Windows.h"
+
+using namespace Microsoft::WRL;
+
+struct Vector4
+{
+    float x, y, z, w;
+};
+
+class D3D12FrameContext
+{
+public:
+    explicit D3D12FrameContext();
+    virtual  ~D3D12FrameContext();
+
+private:
+    ComPtr<IDXGIFactory4> m_factory; // cause error in create device
+    ComPtr<ID3D12Device> m_pd3dDevice;
+};
