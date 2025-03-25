@@ -1,4 +1,5 @@
 #include "Application.hpp"
+#include "components/window/WindowTool.hpp"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -37,13 +38,12 @@ Application::~Application()
 HWND Application::createWindow()
 {
     // Create application window
-    //ImGui_ImplWin32_EnableDpiAwareness();сды
+    //ImGui_ImplWin32_EnableDpiAwareness();
 
     ZeroMemory(&m_wc, sizeof(WNDCLASSEX));
     m_wc.cbSize = sizeof(WNDCLASSEX);
     m_wc.style = CS_HREDRAW | CS_VREDRAW;
-    m_wc.lpfnWndProc = WndProc;
-    m_wc.lpfnWndProc = WndProc;
+    m_wc.lpfnWndProc = WindowProc;
     m_wc.cbClsExtra = 0L;
     m_wc.cbWndExtra = 0L;
     m_wc.hInstance = GetModuleHandle(nullptr);
@@ -65,6 +65,9 @@ HWND Application::createWindow()
         //windowError.append(static_cast<const char*>(m_windowName));
         throw ui::exception("Main window create error", ::GetLastError());
     }
+    
+    //auto ptrWindow = std::make_unique<Win32::WindowTool>(ptrD3D12Context->GetID3D12DeviceComPtr(), L"Test", L"Triangle Window", 150, 150, 800, 800);
+    //ptrWindow->show();
 
     return m_handleWindow;
 }
@@ -245,7 +248,7 @@ void Application::Run()
 // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
 // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Application::WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
         return true;

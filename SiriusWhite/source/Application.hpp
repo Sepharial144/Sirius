@@ -19,7 +19,6 @@
 #include "Windows.h"
 #include <memory>
 
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Encapsulates examples for customizing ImPlot.
 namespace MyImPlot {
@@ -58,6 +57,8 @@ public:
 
 	HWND createWindow();
 	void Run();
+
+    static LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 private:
 	WNDCLASSEXW m_wc;

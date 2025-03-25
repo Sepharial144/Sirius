@@ -1,15 +1,16 @@
 #include "WindowTool.hpp"
+#include "logger/logger.hpp"
 
 #include <string>
 
 namespace Win32 {
-	WindowTool::WindowTool(const wchar_t* label, const wchar_t* window_name, int32_t st_x, int32_t st_y, int32_t width, int32_t height)
-		:m_label{ label }, m_windowName{ window_name }
+	WindowTool::WindowTool(ComPtr<ID3D12Device> device, const wchar_t* label, const wchar_t* window_name, int32_t st_x, int32_t st_y, int32_t width, int32_t height)
+		: D3D12FrameContext{ device }, m_label{ label }, m_windowName{ window_name }
 	{
 		ZeroMemory(&m_wndCl, sizeof(WNDCLASSEX));
 		m_wndCl.cbSize = sizeof(WNDCLASSEX);
 		m_wndCl.style = CS_HREDRAW | CS_VREDRAW;
-		m_wndCl.lpfnWndProc = SharedWinProcEvent; //WndProc; // it should be here
+		m_wndCl.lpfnWndProc = WindowProc;
 		m_wndCl.cbClsExtra = 0L;
 		m_wndCl.cbWndExtra = 0L;
 		m_wndCl.hInstance = GetModuleHandle(nullptr);
@@ -55,5 +56,24 @@ namespace Win32 {
 	void WindowTool::onResize() {}
 	void WindowTool::onDestroy() {}
 	void WindowTool::onSysCommand() {}
+
+
+	LRESULT CALLBACK WindowTool::WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (msg)
+		{
+		case WM_SIZE:
+			logger::info("Resize window");
+			return 0;
+		case WM_SYSCOMMAND:
+			if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+				return 0;
+			break;
+		case WM_DESTROY:
+			logger::info("Destroy window");
+			return 0;
+		}
+		return ::DefWindowProcW(hWnd, msg, wParam, lParam);
+	}
 
 } // namespace Win32
